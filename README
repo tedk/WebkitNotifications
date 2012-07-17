@@ -1,0 +1,12 @@
+Be sure to create the file 
+  android/res/values/serverconfig.xml 
+for your server:
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="server_url">https://.../send_feed_item</string>
+    <string name="server_username">...</string>
+    <string name="server_password">...</string>
+
+</resources>
