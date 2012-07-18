@@ -1,13 +1,13 @@
-<!-- Possible Types: 
+<!--
+ Possible Types: 
 		typeNotificationStateChanged: 	just notifications
-		typeAllMask: 					all
- -->
+		typeAllMask: 					all
+-->
 
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:description="@string/notification_service_description"
     android:accessibilityEventTypes="typeNotificationStateChanged"
-    android:accessibilityFlags="flagDefault"
     android:accessibilityFeedbackType="feedbackVisual"
-    android:notificationTimeout="0"
+    android:accessibilityFlags="flagDefault"
     android:canRetrieveWindowContent="false"
-/>
+    android:description="@string/notification_service_description"
+    android:notificationTimeout="0" />
