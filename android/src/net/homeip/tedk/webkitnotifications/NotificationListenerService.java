@@ -207,7 +207,8 @@ public class NotificationListenerService extends AccessibilityService {
                                 // keyboard, etc.)
 
       NetworkInfo ni = cm.getActiveNetworkInfo();
-      if (ni == null || !ni.getState().equals(NetworkInfo.State.CONNECTED)) return;
+      if (ni == null || !ni.getState().equals(NetworkInfo.State.CONNECTED))
+         return;
 
       if (!updateLocation(locationManager
             .getLastKnownLocation(LocationManager.NETWORK_PROVIDER))) return;
