@@ -1,9 +1,6 @@
 package net.homeip.tedk.webkitnotifications;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
@@ -13,10 +10,8 @@ import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -29,28 +24,17 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Base64;
 import android.view.accessibility.AccessibilityEvent;
 
 public class NotificationListenerService extends AccessibilityService {
 
-   // always verify the host - dont check for certificate
-   private final static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
-      public boolean verify(String hostname, SSLSession session) {
-         return true;
-      }
-   };
-
    /**
     * Trust every server - dont check for any certificate
+    * Source: http://stackoverflow.com/questions/2893819/telling-java-to-accept-self-signed-ssl-certificate
     */
    private static void trustAllHosts() {
       // Create a trust manager that does not validate certificate chains
@@ -75,60 +59,28 @@ public class NotificationListenerService extends AccessibilityService {
          e.printStackTrace();
       }
    }
-
-   private static enum Place {
-      WORK, HOME, OTHER
-   }
-
-   private final LocationListener locationListener = new LocationListener() {
-      public void onLocationChanged(Location location) {
-         updateLocation(location);
-      }
-
-      public void onProviderDisabled(String provider) {}
-
-      public void onProviderEnabled(String provider) {}
-
-      public void onStatusChanged(String provider, int status, Bundle extras) {}
-   };
-   private static final Location work = new Location(
-         LocationManager.NETWORK_PROVIDER);
-   private static final Location home = new Location(
-         LocationManager.NETWORK_PROVIDER);
    static {
-      work.setLongitude(-111.903639);
-      work.setLatitude(33.463407);
-      home.setLongitude(-111.785858);
-      home.setLatitude(33.414156);
+	   trustAllHosts();
    }
 
-   private Place currentPlace;
-   private DateFormat dateFormat;
-   private ConnectivityManager cm;
-   private AudioManager am;
-   private PackageManager pm;
-   private LocationManager locationManager;
+   private DateFormat dateFormat = null;
+   private ConnectivityManager cm = null;
+   private PackageManager pm = null;
 
-   private URL serverUrl;
-   private String encodedAuthentication;
+   private URL serverUrl = null;
+   private String encodedAuthentication = null;
 
    @Override
    protected void onServiceConnected() {
       super.onServiceConnected();
-      trustAllHosts();
-      currentPlace = Place.OTHER;
       dateFormat = DateFormat.getTimeInstance(DateFormat.LONG);
       pm = getPackageManager();
-      am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
       cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-      locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-      locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-            1000 * 60 * 5, 0, locationListener);
 
       try {
          serverUrl = new URL(getResources().getString(R.string.server_url));
       } catch (MalformedURLException e) {
-         // Log.e("NotificationListenerService", "Bad server_url", e);
+         //Log.e("NotificationListenerService", "Bad server_url", e);
       }
       String authString = getResources().getString(R.string.server_username)
             + ":" + getResources().getString(R.string.server_password);
@@ -138,62 +90,12 @@ public class NotificationListenerService extends AccessibilityService {
 
    @Override
    public boolean onUnbind(Intent intent) {
-      locationManager.removeUpdates(locationListener);
-      currentPlace = null;
       dateFormat = null;
       pm = null;
-      am = null;
       cm = null;
-      locationManager = null;
 
       serverUrl = null;
       return super.onUnbind(intent);
-   }
-
-   private synchronized boolean updateLocation(Location currentLocation) {
-      boolean close = false;
-      Place newPlace = Place.OTHER;
-      float workDistance = currentLocation.distanceTo(work);
-      float homeDistance = currentLocation.distanceTo(home);
-      if (currentLocation.hasAccuracy()) {
-         if (workDistance <= currentLocation.getAccuracy() * 2.f) {
-            close = true;
-            newPlace = Place.WORK;
-         } else if (homeDistance <= currentLocation.getAccuracy() * 2.f) {
-            close = true;
-            newPlace = Place.HOME;
-         } else {
-            close = false;
-            newPlace = Place.OTHER;
-         }
-      } else {
-         if (workDistance <= 2000.f) {
-            close = true;
-            newPlace = Place.WORK;
-         } else if (homeDistance <= 2000.f) {
-            close = true;
-            newPlace = Place.HOME;
-         } else {
-            close = false;
-            newPlace = Place.OTHER;
-         }
-      }
-      if (am != null) {
-         if (!newPlace.equals(currentPlace)) {
-            currentPlace = newPlace;
-            if (currentPlace.equals(Place.WORK)) {
-               am.setRingerMode(AudioManager.RINGER_MODE_SILENT);
-               am.setStreamVolume(AudioManager.STREAM_MUSIC, 0,
-                     AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
-            } else {
-               am.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-               am.setStreamVolume(AudioManager.STREAM_MUSIC,
-                     am.getStreamMaxVolume(AudioManager.STREAM_MUSIC),
-                     AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
-            }
-         }
-      }
-      return close;
    }
 
    @Override
@@ -210,9 +112,6 @@ public class NotificationListenerService extends AccessibilityService {
       if (ni == null || !ni.getState().equals(NetworkInfo.State.CONNECTED))
          return;
 
-      if (!updateLocation(locationManager
-            .getLastKnownLocation(LocationManager.NETWORK_PROVIDER))) return;
-
       String time = dateFormat.format(new Date());
       String packageName = event.getPackageName().toString();
       String appName = null;
@@ -221,8 +120,7 @@ public class NotificationListenerService extends AccessibilityService {
                .getApplicationLabel(pm.getApplicationInfo(packageName, 0))
                .toString();
       } catch (Exception e) {
-         // Log.e("NotificationListenerService",
-         // "Could not load application name", e);
+         //Log.e("NotificationListenerService", "Could not load application name", e);
       }
       if (appName == null) appName = packageName;
       String num = Integer.toString(n.number);
@@ -235,14 +133,13 @@ public class NotificationListenerService extends AccessibilityService {
          BitmapFactory.decodeResource(c.getResources(), n.icon).compress(
                Bitmap.CompressFormat.PNG, 100, baos);
          baos.flush();
-         icon = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP
-               | Base64.URL_SAFE);
+         icon = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP | Base64.URL_SAFE);
          while (icon.endsWith("=")) {
             ++iconPadding;
             icon = icon.substring(0, icon.length() - 1);
          }
       } catch (Exception e) {
-         // Log.e("NotificationListenerService", "Could not load icon", e);
+         //Log.e("NotificationListenerService", "Could not load icon", e);
       } finally {
          if (baos != null) try {
             baos.close();
@@ -254,7 +151,7 @@ public class NotificationListenerService extends AccessibilityService {
 
    @Override
    public void onInterrupt() {
-
+	   // do nothing for now
    }
 
    private class SendNotification extends AsyncTask<String, Void, Void> {
@@ -269,14 +166,10 @@ public class NotificationListenerService extends AccessibilityService {
          String icon = params.length > 4 ? params[4] : null;
          String iconPadding = params.length > 5 ? params[5] : null;
 
-         // Log.d("NotificationListenerService", time + ", " + app + ", " + text
-         // + ", " + num + ", " + (icon == null ? "null" : icon.length()));
+         //Log.d("NotificationListenerService", time + ", " + app + ", " + text + ", " + num + ", " + (icon == null ? "null" : icon.length()));
 
          OutputStream os = null;
          OutputStreamWriter wr = null;
-         InputStream is = null;
-         InputStreamReader isr = null;
-         BufferedReader rd = null;
          try {
             JSONObject j = new JSONObject();
             j.put("type", "notification");
@@ -292,7 +185,6 @@ public class NotificationListenerService extends AccessibilityService {
 
             HttpsURLConnection conn = (HttpsURLConnection) serverUrl
                   .openConnection();
-            conn.setHostnameVerifier(DO_NOT_VERIFY);
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             conn.setFixedLengthStreamingMode(json.length());
@@ -304,27 +196,9 @@ public class NotificationListenerService extends AccessibilityService {
             wr = new OutputStreamWriter(os);
             wr.write(json);
             wr.flush();
-
-            // Get the response
-            is = conn.getInputStream();
-            isr = new InputStreamReader(is);
-            rd = new BufferedReader(isr);
-            /*
-             * String line; while ((line = rd.readLine()) != null) {
-             * Log.d("NotificationListenerService", line); }
-             */
          } catch (Exception e) {
-            // Log.e("NotificationListenerService", "Network Exception", e);
+            //Log.e("NotificationListenerService", "Network Exception", e);
          } finally {
-            if (rd != null) try {
-               rd.close();
-            } catch (Exception e) {}
-            if (isr != null) try {
-               isr.close();
-            } catch (Exception e) {}
-            if (is != null) try {
-               is.close();
-            } catch (Exception e) {}
             if (wr != null) try {
                wr.close();
             } catch (Exception e) {}

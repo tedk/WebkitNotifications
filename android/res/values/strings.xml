@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">Webkit Notifications</string>
+    <string name="settings_name">Settings</string>
     <string name="notification_service_description">Displays Notifications as Webkit Notifications</string>
 
 </resources>

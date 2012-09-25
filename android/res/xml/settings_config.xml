@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:key="pref_url"
+        android:title="Server Url"
+        android:summary="Node.JS Server Endpoint"
+        android:defaultValue="" />
+    <CheckBoxPreference
+        android:key="pref_auth"
+        android:title="Use Authentication"
+        android:summary="If the server requires authentication"
+        android:defaultValue="false" />
+    <EditTextPreference 
+        android:key="pref_auth_username"
+        android:title="Username" 
+        android:summary="Username for authentication"
+        android:defaultValue="" 
+        android:enabled="false"/>
+    <EditTextPreference 
+        android:key="pref_auth_password"
+        android:title="Password" 
+        android:summary="Password for authentication" 
+        android:defaultValue=""
+        android:enabled="false" 
+        android:inputType="textPassword" />
+</PreferenceScreen>
