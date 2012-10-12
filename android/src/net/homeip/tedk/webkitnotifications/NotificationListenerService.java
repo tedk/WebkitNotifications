@@ -24,6 +24,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -130,8 +132,14 @@ public class NotificationListenerService extends AccessibilityService {
       try {
          Context c = createPackageContext(packageName, 0);
          baos = new ByteArrayOutputStream();
-         BitmapFactory.decodeResource(c.getResources(), n.icon).compress(
-               Bitmap.CompressFormat.PNG, 100, baos);
+         BitmapFactory.Options options = new BitmapFactory.Options();
+         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+         Bitmap iconBitmap = BitmapFactory.decodeResource(c.getResources(), n.icon, options);
+         Bitmap iconWithBackground = Bitmap.createBitmap(iconBitmap.getWidth(), iconBitmap.getHeight(), iconBitmap.getConfig());
+         Canvas background = new Canvas(iconWithBackground);
+         background.drawColor(Color.BLACK);
+         background.drawBitmap(iconBitmap, 0.f, 0.f, null);
+         iconWithBackground.compress(Bitmap.CompressFormat.PNG, 100, baos);
          baos.flush();
          icon = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP | Base64.URL_SAFE);
          while (icon.endsWith("=")) {
