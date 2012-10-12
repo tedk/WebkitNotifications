@@ -1,5 +1,2 @@
 bin
 gen
-
-# ignore for security
-res/values/serverconfig.xml

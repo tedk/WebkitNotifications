@@ -10,4 +10,6 @@
     android:accessibilityFlags="flagDefault"
     android:canRetrieveWindowContent="false"
     android:description="@string/notification_service_description"
-    android:notificationTimeout="0" />
+    android:notificationTimeout="0" 
+    android:settingsActivity="net.homeip.tedk.webkitnotifications.SettingsActivity"
+    />
