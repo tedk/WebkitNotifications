@@ -33,7 +33,6 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Base64;
-import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 
 public class NotificationListenerService extends AccessibilityService implements
@@ -100,7 +99,7 @@ public class NotificationListenerService extends AccessibilityService implements
 		try {
 			serverUrl = new URL(sharedPref.getString("pref_url", ""));
 		} catch (MalformedURLException e) {
-			Log.e("NotificationListenerService", "Bad server_url", e);
+			//Log.e("NotificationListenerService", "Bad server_url", e);
 		}
 		authenticationEnabled = sharedPref.getBoolean("pref_auth", false);
 		if (authenticationEnabled) {
@@ -157,7 +156,7 @@ public class NotificationListenerService extends AccessibilityService implements
 			appName = pm.getApplicationLabel(
 					pm.getApplicationInfo(packageName, 0)).toString();
 		} catch (Exception e) {
-			Log.e("NotificationListenerService", "Could not load application name", e);
+			//Log.e("NotificationListenerService", "Could not load application name", e);
 		}
 		if (appName == null)
 			appName = packageName;
@@ -187,7 +186,7 @@ public class NotificationListenerService extends AccessibilityService implements
 				icon = icon.substring(0, icon.length() - 1);
 			}
 		} catch (Exception e) {
-			Log.e("NotificationListenerService", "Could not load icon", e);
+			//Log.e("NotificationListenerService", "Could not load icon", e);
 		} finally {
 			if (baos != null)
 				try {
@@ -216,9 +215,7 @@ public class NotificationListenerService extends AccessibilityService implements
 			String icon = params.length > 4 ? params[4] : null;
 			String iconPadding = params.length > 5 ? params[5] : null;
 
-			Log.d("NotificationListenerService", time + ", " + app + ", " +
-			   text + ", " + num + ", " + (icon == null ? "null" :
-			   icon.length()));
+			//Log.d("NotificationListenerService", time + ", " + app + ", " + text + ", " + num + ", " + (icon == null ? "null" : icon.length()));
 
 			OutputStream os = null;
 			OutputStreamWriter wr = null;
@@ -251,7 +248,7 @@ public class NotificationListenerService extends AccessibilityService implements
 				wr.write(json);
 				wr.flush();
 			} catch (Exception e) {
-				Log.e("NotificationListenerService", "Network Exception", e);
+				//Log.e("NotificationListenerService", "Network Exception", e);
 			} finally {
 				if (wr != null)
 					try {
