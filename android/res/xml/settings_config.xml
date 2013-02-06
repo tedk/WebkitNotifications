@@ -4,7 +4,9 @@
         android:key="pref_url"
         android:title="Server Url"
         android:summary="Node.JS Server Endpoint"
-        android:defaultValue="/node/phone/send_feed_item" />
+        android:defaultValue="/node/phone/send_feed_item"
+        android:inputType="textUri" /> 
+        />
     <CheckBoxPreference
         android:key="pref_auth"
         android:title="Use Authentication"
