@@ -4,16 +4,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -159,56 +155,8 @@ public class NotificationListenerService extends AccessibilityService implements
 				((n.flags & Notification.FLAG_SHOW_LIGHTS) == Notification.FLAG_SHOW_LIGHTS)
 				|| ((n.defaults & Notification.DEFAULT_LIGHTS) == Notification.DEFAULT_LIGHTS);
 		
-		if (text == null && soundUri == null && !vibrate && !lights)
-			return; // ignore blank notifications (downloads, gps, keyboard, etc.)
-		
 		if (text == null)
-		{
-			return;
-			/* maybe we'll revisit this later:
-			text = "";
-			try {
-				/**
-				 * This might be able to get some text for us
-				 * Source: http://stackoverflow.com/questions/9292032/extract-notification-text-from-parcelable-contentview-or-contentintent
-				 * /
-			     Map<Integer, String> textMap = new HashMap<Integer, String>();
-			     Field outerFields[] = n.contentView.getClass().getDeclaredFields();
-			     for (int i = 0; i < outerFields.length; i++) {
-			    	if (!outerFields[i].getName().equals("mActions")) continue;
-			    	outerFields[i].setAccessible(true);
-			    	@SuppressWarnings("unchecked")
-			    		ArrayList<Object> actions = (ArrayList<Object>) outerFields[i]
-			    			 .get(n.contentView);
-			    	 for (Object action : actions) {
-			    		 Field innerFields[] = action.getClass().getDeclaredFields();
-			    		 Object value = null;
-			             Integer type = null;
-			             Integer viewId = null;
-			             for (Field field : innerFields) {
-			            	 field.setAccessible(true);
-			                 if (field.getName().equals("value")) {
-			                	 value = field.get(action);
-			                 } else if (field.getName().equals("type")) {
-			                	 type = field.getInt(action);
-			                 } else if (field.getName().equals("viewId")) {
-			                	 viewId = field.getInt(action);
-			                 }
-			             }
-			             if ((type == 9 || type == 10) && viewId != null) {
-			            	 textMap.put(viewId, value.toString());
-			             }
-			    	 }
-			    	 if(textMap.containsKey(16908358)) {
-			    		text = textMap.get(16908358); 
-			    		break;
-			    	 }
-			     }
-			} catch (Exception e)
-			{
-				//Log.e("NotificationListenerService", "Could not parse TextView", e);
-			}*/
-		}
+			return; // ignore blank notifications (downloads, gps, keyboard, etc.)
 		
 		//for now, we'll use the default sound for vibrate and lights
 		if (soundUri == null && (vibrate || lights))
