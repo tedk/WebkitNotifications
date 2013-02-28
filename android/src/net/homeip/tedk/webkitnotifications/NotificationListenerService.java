@@ -276,6 +276,8 @@ public class NotificationListenerService extends AccessibilityService implements
 				String json = j.toString();
 
 				HttpsURLConnection conn = (HttpsURLConnection) serverUrl.openConnection();
+				conn.setConnectTimeout(5000);
+				conn.setReadTimeout(5000);
 				conn.setDoOutput(true);
 				conn.setRequestMethod("POST");
 				conn.setFixedLengthStreamingMode(json.length());
