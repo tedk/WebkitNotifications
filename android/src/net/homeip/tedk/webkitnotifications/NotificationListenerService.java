@@ -141,7 +141,7 @@ public class NotificationListenerService extends AccessibilityService implements
 		if (n == null)
 			return;
 
-		String text = n.tickerText == null ? null : n.tickerText.toString();
+		String text = n.tickerText == null || n.tickerText.toString().trim().length() == 0 ? null : n.tickerText.toString().trim();
 		Uri soundUri = null;
 		if(n.sound != null) {
 		   soundUri = n.sound;
