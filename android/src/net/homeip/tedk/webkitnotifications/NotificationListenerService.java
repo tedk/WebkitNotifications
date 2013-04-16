@@ -19,7 +19,6 @@ import javax.net.ssl.X509TrustManager;
 import org.json.JSONObject;
 
 import android.accessibilityservice.AccessibilityService;
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -41,12 +40,11 @@ import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.view.accessibility.AccessibilityEvent;
 
-@SuppressLint("UseSparseArrays")
 public class NotificationListenerService extends AccessibilityService implements
 		OnSharedPreferenceChangeListener {
 
 	/**
-	 * Trust every server - don't check for any certificate
+	 * Trust every server - don't validate any certificate
 	 * Source: http://stackoverflow.com/questions/2893819/telling-java-to-accept-self-signed-ssl-certificate
 	 */
 	private static void trustAllHosts() {
