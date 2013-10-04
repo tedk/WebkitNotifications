@@ -45,6 +45,12 @@ import android.util.Log;
 
 public class NotificationService extends NotificationListenerService implements
 		OnSharedPreferenceChangeListener {
+	
+	private static volatile boolean isRunning = false;
+	
+	public static synchronized boolean isRunning() {
+		return isRunning;
+	}
 
 	/**
 	 * Trust every server - don't validate any certificate Source:
@@ -101,9 +107,10 @@ public class NotificationService extends NotificationListenerService implements
 	private String encodedAuthentication = null;
 
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
+	public synchronized int onStartCommand(Intent intent, int flags, int startId) {
 		setUp();
 		super.onStartCommand(intent, flags, startId);
+		isRunning = true;
 		return START_STICKY;
 	}
 
@@ -146,8 +153,9 @@ public class NotificationService extends NotificationListenerService implements
 	}
 	
 	@Override
-	public void onDestroy() {
+	public synchronized void onDestroy() {
 		tearDown();
+		isRunning = false;
 		super.onDestroy();
 	}
 	
